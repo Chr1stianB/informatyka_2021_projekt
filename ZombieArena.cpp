@@ -192,6 +192,25 @@ int main()
 			// Wysrodkuj View dookola gracza
 			mainView.setCenter(player.getCenter());
 		}// Koniec updaetowania sceny
+		if (state == State::PLAYING)
+		{
+			window.clear();
+			window.setView(mainView);
+			window.draw(player.getSprite());
+		}
+		if (state == State::LEVELING_UP)
+		{
+
+		}
+		if (state == State::PAUSED)
+		{
+
+		}
+		if (state == State::GAME_OVER)
+		{
+
+		}
+		window.display();
 	} // Koniec glownej petli
 
 	return 0;
