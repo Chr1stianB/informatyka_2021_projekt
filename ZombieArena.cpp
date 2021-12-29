@@ -19,7 +19,7 @@
 int main()
 {
 	// Gra bedzie zawsze w jednym z czterech stanow
-	enum class State {PAUSED, LEVELING_UP, GAME_OVER, PLAYING};
+	enum class State { PAUSED, LEVELING_UP, GAME_OVER, PLAYING };
 
 	// Zaczynamy ze stanem GAME_OVER
 	State state = State::GAME_OVER;
@@ -214,4 +214,4 @@ int main()
 	} // Koniec glownej petli
 
 	return 0;
-} 
+}

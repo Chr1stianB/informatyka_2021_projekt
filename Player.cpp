@@ -149,7 +149,7 @@ void Player::update(float elapsedTime, Vector2i mousePosition)
 	{
 		m_Position.y = m_Arena.top + m_TileSize;
 	}
-	
+
 	// Obliczanie pod jakim katem znajduje sie gracz
 	float angle = (atan2(mousePosition.y - m_Resolution.y / 2, mousePosition.x - m_Resolution.x / 2) * 180) / 3.141;
 
