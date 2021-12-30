@@ -1,98 +1,106 @@
-/*
- Temat projektu: Strzelanka Zombie
- - Do zabijania bêd¹ trzy rodzaje zombie. Bêd¹ mia³y ró¿ne atrybuty,
- takie jak wygl¹d, zdrowie i szybkoœæ. Nazwiemy je biegaczami, tankami i
- pe³zaczami.
- - Gracz bêdzie mia³ za zadanie strzelaæ do zombie podczas ucieczki przed nimi.
- - Œwiat przesuwa siê wraz z graczem podczas wciskania przycisków WASD.
- - Pistolet oraz strza³y kontrolujemy za pomoc¹ myszki
- - Miêdzy kolejnymi levelami gracz bêdzie wybiera³ w jaki sposób chce polepszyæ
-   zdolnoœci swojej postaci.
- - Gracz bêdzie móg³ podnosiæ ró¿ne "znajdŸki" losowo pojawi¹ce siê w trakcie
-   gry, które bêd¹ odnawia³y jego amunicjê lub ¿ycie.
- - Ka¿da fala zwiêksza rozmiar areny oraz liczebnoœæ zombie
-*/
-
-#include <iostream>
 #include <SFML/Graphics.hpp>
+
+#include "ZombieArena.h"
 #include "Player.h"
+
+using namespace sf;
+
 int main()
 {
-	// Gra bedzie zawsze w jednym z czterech stanow
+	// The game will always be in one of four states
 	enum class State { PAUSED, LEVELING_UP, GAME_OVER, PLAYING };
-
-	// Zaczynamy ze stanem GAME_OVER
+	// Start with the GAME_OVER state
 	State state = State::GAME_OVER;
 
-	// Pobierz rozdzielczosc ekranu i stworz okno SFML
+	// Get the screen resolution and create an SFML window
 	Vector2f resolution;
 	resolution.x = VideoMode::getDesktopMode().width;
 	resolution.y = VideoMode::getDesktopMode().height;
 
-	RenderWindow window(VideoMode(resolution.x, resolution.y), "Zombie Arena", Style::Fullscreen);
+	RenderWindow window(VideoMode(resolution.x, resolution.y),
+		"Zombie Arena", Style::Fullscreen);
 
-	// Stworzenie View dla glownego planu w SFML
+	// Create a an SFML View for the main action
 	View mainView(sf::FloatRect(0, 0, resolution.x, resolution.y));
 
-	// Odmierzanie czasu
+	// Here is our clock for timing everything
 	Clock clock;
-
-	// Jak dlugo stan Playing byl aktywny
+	// How long has the PLAYING state been active
 	Time gameTimeTotal;
 
-	// Pozycja myszki relatywnie do koordynatow swiata
+	// Where is the mouse in relation to world coordinates
 	Vector2f mouseWorldPosition;
-
-	// Pozycja myszki relatywnie do koordynatow ekranu
+	// Where is the mouse in relation to screen coordinates
 	Vector2i mouseScreenPosition;
 
-	// Stworz instancje klasy Player
+	// Create an instance of the Player class
 	Player player;
 
-	// Ograniczenia areny
+	// The boundaries of the arena
 	IntRect arena;
 
-	// Glowna petla
+	// Create the background
+	VertexArray background;
+	// Load the texture for our background vertex array
+	Texture textureBackground;
+	textureBackground.loadFromFile("graphics/background_sheet.png");
+
+	// The main game loop
 	while (window.isOpen())
 	{
+		/*
+		************
+		Handle input
+		************
+		*/
+
+		// Handle events
 		Event event;
 		while (window.pollEvent(event))
 		{
 			if (event.type == Event::KeyPressed)
 			{
-				// Zapauzuj gre jezli w trakcie
+				// Pause a game while playing
 				if (event.key.code == Keyboard::Return &&
 					state == State::PLAYING)
 				{
 					state = State::PAUSED;
 				}
-				// zrestartuj jezeli zapauzowana
+
+				// Restart while paused
 				else if (event.key.code == Keyboard::Return &&
 					state == State::PAUSED)
 				{
 					state = State::PLAYING;
-					// Resetowanie zegara
+					// Reset the clock so there isn't a frame jump
 					clock.restart();
 				}
-				// Rozpicznij nowa gre jezeli w trybie GAME_OVER
-				else if (event.key.code == Keyboard::Return && state == State::GAME_OVER)
+
+				// Start a new game while in GAME_OVER state
+				else if (event.key.code == Keyboard::Return &&
+					state == State::GAME_OVER)
 				{
 					state = State::LEVELING_UP;
 				}
+
 				if (state == State::PLAYING)
 				{
-					;
 				}
+
 			}
-		} // Koniec event pooling
-		// Gracz wychodzi po wcisnieciu ESC
+		}// End event polling
+
+
+		 // Handle the player quitting
 		if (Keyboard::isKeyPressed(Keyboard::Escape))
 		{
 			window.close();
 		}
-		// Kontrolowanie ruchu z klawiatury
+
+		// Handle controls while playing
 		if (state == State::PLAYING)
 		{
+			// Handle the pressing and releasing of the WASD keys
 			if (Keyboard::isKeyPressed(Keyboard::W))
 			{
 				player.moveUp();
@@ -101,6 +109,7 @@ int main()
 			{
 				player.stopUp();
 			}
+
 			if (Keyboard::isKeyPressed(Keyboard::S))
 			{
 				player.moveDown();
@@ -109,6 +118,7 @@ int main()
 			{
 				player.stopDown();
 			}
+
 			if (Keyboard::isKeyPressed(Keyboard::A))
 			{
 				player.moveLeft();
@@ -117,6 +127,7 @@ int main()
 			{
 				player.stopLeft();
 			}
+
 			if (Keyboard::isKeyPressed(Keyboard::D))
 			{
 				player.moveRight();
@@ -125,93 +136,131 @@ int main()
 			{
 				player.stopRight();
 			}
-		} // Zakonczenie instrukcji sterujacych WASD
-		// Stan LEVELING_UP
+
+		}// End WASD while playing
+
+		 // Handle the levelling up state
 		if (state == State::LEVELING_UP)
 		{
+			// Handle the player levelling up
 			if (event.key.code == Keyboard::Num1)
 			{
 				state = State::PLAYING;
 			}
+
 			if (event.key.code == Keyboard::Num2)
 			{
 				state = State::PLAYING;
 			}
+
 			if (event.key.code == Keyboard::Num3)
 			{
 				state = State::PLAYING;
 			}
+
 			if (event.key.code == Keyboard::Num4)
 			{
 				state = State::PLAYING;
 			}
+
 			if (event.key.code == Keyboard::Num5)
 			{
 				state = State::PLAYING;
 			}
+
 			if (event.key.code == Keyboard::Num6)
 			{
 				state = State::PLAYING;
 			}
+
 			if (state == State::PLAYING)
 			{
-				// Przygotowanie poziomu 
+				// Prepare thelevel
+				// We will modify the next two lines later
 				arena.width = 500;
 				arena.height = 500;
 				arena.left = 0;
 				arena.top = 0;
 
-				int tileSize = 50;
+				// Pass the vertex array by reference 
+				// to the createBackground function
+				int tileSize = createBackground(background, arena);
+
+				// Spawn the player in the middle of the arena
 				player.spawn(arena, resolution, tileSize);
+
+				// Reset the clock so there isn't a frame jump
 				clock.restart();
 			}
-		} // Koniec PETLI LEVELING_UP
+		}// End levelling up
+
+		 /*
+		 ****************
+		 UPDATE THE FRAME
+		 ****************
+		 */
 		if (state == State::PLAYING)
 		{
-			// Aktualizajca czasu
+			// Update the delta time
 			Time dt = clock.restart();
-
-			// Aktualizacja calkowiteg czasu gry
+			// Update the total game time
 			gameTimeTotal += dt;
-
-			// Zaokraglij czas gry
+			// Make a decimal fraction of 1 from the delta time
 			float dtAsSeconds = dt.asSeconds();
 
-			// Gdzie jest wskaznik myszy
+			// Where is the mouse pointer
 			mouseScreenPosition = Mouse::getPosition();
 
-			// Konwertuj polozenie myszy na koorydnaty swiata z mainView
-			mouseWorldPosition = window.mapPixelToCoords(Mouse::getPosition(), mainView);
+			// Convert mouse position to world coordinates of mainView
+			mouseWorldPosition = window.mapPixelToCoords(
+				Mouse::getPosition(), mainView);
 
-			// Aktualizuj gracza
+			// Update the player
 			player.update(dtAsSeconds, Mouse::getPosition());
 
-			// Zapisz nowa pozycje gracza
+			// Make a note of the players new position
 			Vector2f playerPosition(player.getCenter());
 
-			// Wysrodkuj View dookola gracza
+			// Make the view centre around the player				
 			mainView.setCenter(player.getCenter());
-		}// Koniec updaetowania sceny
+		}// End updating the scene
+
+		 /*
+		 **************
+		 Draw the scene
+		 **************
+		 */
+
 		if (state == State::PLAYING)
 		{
 			window.clear();
+
+			// set the mainView to be displayed in the window
+			// And draw everything related to it
 			window.setView(mainView);
+
+			// Draw the background
+			window.draw(background, &textureBackground);
+
+			// Draw the player
 			window.draw(player.getSprite());
 		}
+
 		if (state == State::LEVELING_UP)
 		{
-
 		}
+
 		if (state == State::PAUSED)
 		{
-
 		}
+
 		if (state == State::GAME_OVER)
 		{
-
 		}
+
 		window.display();
-	} // Koniec glownej petli
+
+	}// End game loop
 
 	return 0;
 }
